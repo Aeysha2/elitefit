@@ -3,11 +3,12 @@ import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { LEVEL_LABELS } from '../../core/models';
 import { loadable } from '../../core/resource';
+import { ImgFallback } from '../../shared/img-fallback';
 import { Stars } from '../../shared/stars';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, Stars],
+  imports: [ImgFallback, RouterLink, Stars],
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })

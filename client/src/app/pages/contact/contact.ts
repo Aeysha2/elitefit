@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { apiErrorMessage } from '../../core/api-error';
 import { ApiService } from '../../core/api.service';
+import { GYM_INFO } from '../../core/gym-info';
 import { PHONE_PATTERN } from '../../core/validators';
 
 @Component({
@@ -19,6 +20,11 @@ import { PHONE_PATTERN } from '../../core/validators';
 })
 export class Contact {
   private readonly api = inject(ApiService);
+  protected readonly info = GYM_INFO;
+  protected readonly phoneHref = GYM_INFO.phone.replace(/\s/g, '');
+  protected readonly mapUrl =
+    'https://www.google.com/maps/search/?api=1&query=' +
+    encodeURIComponent(`${GYM_INFO.name} ${GYM_INFO.address} ${GYM_INFO.city}`);
   protected readonly sent = signal(false);
   protected readonly submitting = signal(false);
   protected readonly error = signal<string | null>(null);

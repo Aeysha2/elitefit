@@ -35,7 +35,7 @@
       </p>
       <a routerLink="/coachs" class="btn btn--ghost">Rencontrer nos coachs</a>
     </div>
-    <img
+    <img appImgFallback
       src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=900&q=70&fm=webp"
       alt="Plateau de musculation EliteFit"
       width="900"
@@ -56,7 +56,7 @@
         <div class="grid">
           @for (p of programs().data ?? []; track p.id) {
             <article class="card program">
-              <img [src]="p.imageUrl" [alt]="p.name" loading="lazy" width="800" height="500" />
+              <img appImgFallback [src]="p.imageUrl" [alt]="p.name" loading="lazy" width="800" height="500" />
               <div class="program__body">
                 <span class="badge">{{ levels[p.level] }} · {{ p.durationWeeks }} semaines</span>
                 <h3>{{ p.name }}</h3>

@@ -1,5 +1,5 @@
 -- Données de démonstration EliteFit.
--- Seul le prix annuel (150 000 FCFA) est confirmé ; les autres prix sont provisoires.
+-- Prix et contenus de démonstration : modifiez-les librement puis relancez npm run db:seed après npm run db:schema.
 
 INSERT INTO plans (name, duration_months, price_fcfa, benefits, is_featured, sort_order) VALUES
 ('Mensuel', 1, 20000, JSON_ARRAY('Accès illimité 24 h/24', 'Vestiaires et douches', '1 séance d''essai avec un coach'), FALSE, 1),

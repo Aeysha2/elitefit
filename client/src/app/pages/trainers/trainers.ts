@@ -2,10 +2,11 @@ import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { loadable } from '../../core/resource';
+import { ImgFallback } from '../../shared/img-fallback';
 
 @Component({
   selector: 'app-trainers',
-  imports: [RouterLink],
+  imports: [ImgFallback, RouterLink],
   template: `
     <section class="section">
       <div class="container">
@@ -18,7 +19,7 @@ import { loadable } from '../../core/resource';
             <div class="grid trainers">
               @for (t of trainers().data ?? []; track t.id) {
                 <article class="card trainer">
-                  <img [src]="t.photoUrl" [alt]="'Photo de ' + t.name" loading="lazy" width="600" height="600" />
+                  <img appImgFallback [src]="t.photoUrl" [alt]="'Photo de ' + t.name" loading="lazy" width="600" height="600" />
                   <div class="trainer__body">
                     <h2 class="trainer__name">{{ t.name }}</h2>
                     <p class="trainer__spec">{{ t.specialization }}</p>
@@ -38,7 +39,7 @@ import { loadable } from '../../core/resource';
   `,
   styles: `
     .trainers { margin-top: 32px; }
-    .trainer img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .trainer img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; }
     .trainer__body { padding: 20px; }
     .trainer__name { font-size: 1.6rem; text-transform: none; margin-bottom: 4px; }
     .trainer__spec { color: var(--accent); font-weight: 600; margin-bottom: 8px; }

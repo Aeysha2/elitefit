@@ -2,8 +2,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ApiService } from '../../core/api.service';
 import { Level, LEVEL_LABELS, Program } from '../../core/models';
 import { loadable } from '../../core/resource';
+import { ImgFallback } from '../../shared/img-fallback';
 
 @Component({
+  imports: [ImgFallback],
   selector: 'app-programs',
   template: `
     <section class="section">
@@ -27,7 +29,7 @@ import { loadable } from '../../core/resource';
             <div class="grid">
               @for (p of visible(); track p.id) {
                 <article class="card program">
-                  <img [src]="p.imageUrl" [alt]="p.name" loading="lazy" width="800" height="500" />
+                  <img appImgFallback [src]="p.imageUrl" [alt]="p.name" loading="lazy" width="800" height="500" />
                   <div class="program__body">
                     <h2 class="program__name">{{ p.name }}</h2>
                     <p>{{ p.description }}</p>

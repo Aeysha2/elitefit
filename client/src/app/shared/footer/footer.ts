@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { GYM_INFO } from '../../core/gym-info';
 
 @Component({
   selector: 'app-footer',
@@ -12,8 +13,13 @@ import { RouterLink } from '@angular/router';
           <p>Votre salle de sport ouverte 24 h/24 et 7 j/7.</p>
         </div>
         <div>
-          <h3>Horaires</h3>
-          <p>Tous les jours, jour et nuit.<br />Accueil et coachs : sur rendez-vous.</p>
+          <h3>Nous trouver</h3>
+          <p>
+            {{ info.hours }}<br />
+            {{ info.address }}, {{ info.city }}<br />
+            <a [href]="'tel:' + info.phone.replaceAll(' ', '')">{{ info.phone }}</a><br />
+            <a [href]="'mailto:' + info.email">{{ info.email }}</a>
+          </p>
         </div>
         <div>
           <h3>Liens</h3>
@@ -21,6 +27,10 @@ import { RouterLink } from '@angular/router';
             <a routerLink="/formules">Formules</a><br />
             <a routerLink="/essai-gratuit">Essai gratuit</a><br />
             <a routerLink="/contact">Contact</a>
+          </p>
+          <p>
+            <a [href]="info.instagram" target="_blank" rel="noopener">Instagram</a> ·
+            <a [href]="info.facebook" target="_blank" rel="noopener">Facebook</a>
           </p>
         </div>
       </div>
@@ -40,4 +50,5 @@ import { RouterLink } from '@angular/router';
 })
 export class Footer {
   protected readonly year = new Date().getFullYear();
+  protected readonly info = GYM_INFO;
 }

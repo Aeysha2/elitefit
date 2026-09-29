@@ -21,7 +21,7 @@
         <div class="gallery">
           @for (img of visible(); track img.id; let i = $index) {
             <button type="button" class="gallery__item" (click)="open(i)" [attr.aria-label]="'Agrandir : ' + img.altText">
-              <img [src]="img.url" [alt]="img.altText" loading="lazy" width="1200" height="800" />
+              <img appImgFallback [src]="img.url" [alt]="img.altText" loading="lazy" width="1200" height="800" />
             </button>
           }
         </div>
@@ -35,7 +35,7 @@
     <button type="button" class="lightbox__close" (click)="close()" aria-label="Fermer">✕</button>
     <button type="button" class="lightbox__nav lightbox__nav--prev" (click)="$event.stopPropagation(); step(-1)" aria-label="Image précédente">‹</button>
     <figure (click)="$event.stopPropagation()">
-      <img [src]="img.url" [alt]="img.altText" />
+      <img appImgFallback [src]="img.url" [alt]="img.altText" />
       <figcaption>{{ img.altText }}</figcaption>
     </figure>
     <button type="button" class="lightbox__nav lightbox__nav--next" (click)="$event.stopPropagation(); step(1)" aria-label="Image suivante">›</button>

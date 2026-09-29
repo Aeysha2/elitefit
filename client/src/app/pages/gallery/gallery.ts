@@ -2,6 +2,7 @@ import { Component, computed, HostListener, inject, signal } from '@angular/core
 import { ApiService } from '../../core/api.service';
 import { GalleryCategory, GalleryImage } from '../../core/models';
 import { loadable } from '../../core/resource';
+import { ImgFallback } from '../../shared/img-fallback';
 
 const CATEGORY_LABELS: Record<GalleryCategory, string> = {
   interior: 'La salle',
@@ -11,6 +12,7 @@ const CATEGORY_LABELS: Record<GalleryCategory, string> = {
 };
 
 @Component({
+  imports: [ImgFallback],
   selector: 'app-gallery',
   templateUrl: './gallery.html',
   styleUrl: './gallery.scss',

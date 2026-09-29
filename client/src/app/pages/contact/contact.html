@@ -4,9 +4,16 @@
       <h1>Contact</h1>
       <p class="lead">Une question sur les formules, les coachs ou la salle ? Écrivez-nous, nous répondons vite.</p>
       <ul class="info">
-        <li><strong>Horaires</strong>Ouvert 24 h/24, 7 j/7</li>
-        <li><strong>Adresse</strong>Adresse de la salle à compléter</li>
-        <li><strong>Téléphone</strong>Numéro à compléter</li>
+        <li><strong>Horaires</strong>{{ info.hours }}</li>
+        <li>
+          <strong>Adresse</strong>{{ info.address }}<br />{{ info.city }}<br />
+          <a [href]="mapUrl" target="_blank" rel="noopener">Voir sur la carte</a>
+        </li>
+        <li>
+          <strong>Téléphone</strong><a [href]="'tel:' + phoneHref">{{ info.phone }}</a><br />
+          <a [href]="'https://wa.me/' + info.whatsapp" target="_blank" rel="noopener">Écrire sur WhatsApp</a>
+        </li>
+        <li><strong>E-mail</strong><a [href]="'mailto:' + info.email">{{ info.email }}</a></li>
       </ul>
     </div>
 

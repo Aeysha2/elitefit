@@ -71,8 +71,14 @@ Règles de réservation : date entre demain et J+30, créneaux d'une heure (24 h
 3. **Site** (Vercel) : Root Directory `client`, build `npx ng build`, dossier de sortie `dist/client/browser`. Mettre l'URL publique de l'API dans `client/src/environments/environment.ts`.
 4. Mettre l'URL Vercel dans `CORS_ORIGIN` côté API.
 
-## À compléter
+## Modifier les informations de la salle
 
-- Prix des formules mensuelle, trimestrielle et semestrielle (seul l'annuel à 150 000 FCFA est confirmé) : `server/database/seed.sql`.
-- Adresse et téléphone de la salle : `client/src/app/pages/contact/contact.html`.
-- Photos réelles (les images actuelles viennent d'Unsplash).
+Les informations actuelles sont provisoires. Pour les changer :
+
+| Quoi | Fichier |
+| --- | --- |
+| Adresse, téléphone, WhatsApp, e-mail, réseaux sociaux | `client/src/app/core/gym-info.ts` |
+| Prix et avantages des formules, coachs, programmes, témoignages, photos de la galerie | `server/database/seed.sql` (puis `npm run db:schema && npm run db:seed`) |
+| Photos de l'accueil (bannière et présentation) | `client/src/app/pages/home/home.scss` et `home.html` |
+
+Les photos viennent d'Unsplash (libres de droits). Pour utiliser vos propres photos, placez-les dans `client/public/images/` et remplacez les URL par `/images/nom-du-fichier.webp`. Une image introuvable est remplacée automatiquement par un visuel EliteFit.
