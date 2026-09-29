@@ -37,6 +37,8 @@ npm start                     # http://localhost:4200
 
 L'espace admin est sur http://localhost:4200/admin.
 
+Les scripts npm du client utilisent le compilateur Sass en JavaScript (`NG_BUILD_SASS_EMBEDDED=0`), car le compilateur natif exige macOS 14. Lancez donc le site avec `npm start` et `npm run build`, pas avec `ng serve` ou `ng build` directement.
+
 ## Scripts
 
 | Dossier | Commande | Effet |
@@ -47,8 +49,8 @@ L'espace admin est sur http://localhost:4200/admin.
 | server | `npm run db:schema` / `npm run db:seed` | Création des tables / données de démonstration |
 | server | `npm run create-admin` | Crée ou met à jour un administrateur |
 | client | `npm start` | Serveur de développement |
-| client | `npx ng test --watch=false` | Tests unitaires |
-| client | `npx ng build` | Build de production dans `client/dist/client/browser` |
+| client | `npm test` | Tests unitaires |
+| client | `npm run build` | Build de production dans `client/dist/client/browser` |
 
 ## API
 
@@ -70,7 +72,7 @@ Règles de réservation : date entre demain et J+30, créneaux d'une heure (24 h
 
 1. **Base MySQL** (Railway ou Aiven) : renseigner les `DB_*` dans `server/.env`, puis `npm run db:schema`, `npm run db:seed` et `npm run create-admin`.
 2. **API** (Render ou Railway) : Root Directory `server`, build `npm ci && npm run build`, start `npm start`. Reporter toutes les variables de `.env.example` avec `NODE_ENV=production`.
-3. **Site** (Vercel) : Root Directory `client`, build `npx ng build`, dossier de sortie `dist/client/browser`. Mettre l'URL publique de l'API dans `client/src/environments/environment.ts`.
+3. **Site** (Vercel) : Root Directory `client`, build `npm run build`, dossier de sortie `dist/client/browser`. Mettre l'URL publique de l'API dans `client/src/environments/environment.ts`.
 4. Mettre l'URL Vercel dans `CORS_ORIGIN` côté API.
 
 ## Modifier les informations de la salle

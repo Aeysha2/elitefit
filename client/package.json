@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "start": "cross-env NG_BUILD_SASS_EMBEDDED=0 ng serve",
+    "build": "cross-env NG_BUILD_SASS_EMBEDDED=0 ng build",
+    "watch": "cross-env NG_BUILD_SASS_EMBEDDED=0 ng build --watch --configuration development",
+    "test": "cross-env NG_BUILD_SASS_EMBEDDED=0 ng test --watch=false"
   },
   "private": true,
   "packageManager": "npm@11.19.0",
@@ -24,6 +24,7 @@
     "@angular/build": "^22.2.0",
     "@angular/cli": "^22.2.0",
     "@angular/compiler-cli": "^22.2.0",
+    "cross-env": "^10.1.0",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
