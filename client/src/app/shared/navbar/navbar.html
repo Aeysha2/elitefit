@@ -1,0 +1,33 @@
+<header class="navbar">
+  <div class="container navbar__inner">
+    <a routerLink="/" class="logo" (click)="close()">Elite<span>Fit</span></a>
+
+    <button
+      class="burger"
+      type="button"
+      [attr.aria-expanded]="open()"
+      aria-controls="menu-principal"
+      (click)="open.set(!open())"
+    >
+      <span class="visually-hidden">{{ open() ? 'Fermer le menu' : 'Ouvrir le menu' }}</span>
+      <span class="burger__bar"></span>
+      <span class="burger__bar"></span>
+      <span class="burger__bar"></span>
+    </button>
+
+    <nav id="menu-principal" class="menu" [class.is-open]="open()" aria-label="Navigation principale">
+      @for (link of links; track link.path) {
+        <a [routerLink]="link.path" routerLinkActive="is-active" (click)="close()">{{ link.label }}</a>
+      }
+      <button
+        type="button"
+        class="theme-toggle"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.theme() === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'"
+      >
+        {{ theme.theme() === 'dark' ? '☀' : '☾' }}
+      </button>
+      <a routerLink="/essai-gratuit" class="btn btn--small" (click)="close()">Essai gratuit</a>
+    </nav>
+  </div>
+</header>

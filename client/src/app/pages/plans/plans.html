@@ -1,0 +1,51 @@
+<section class="section">
+  <div class="container">
+    <h1>Formules et tarifs</h1>
+    <p class="lead">
+      Un accès illimité à la salle, 24 h/24 et 7 j/7, quelle que soit la formule. Plus vous vous
+      engagez longtemps, moins vous payez par mois.
+    </p>
+
+    @switch (plans().status) {
+      @case ('loading') { <p class="state">Chargement des formules…</p> }
+      @case ('error') { <p class="state">Impossible de charger les formules pour le moment.</p> }
+      @case ('ready') {
+        <div class="plans">
+          @for (plan of plans().data ?? []; track plan.id) {
+            <article class="card plan" [class.plan--featured]="plan.isFeatured">
+              @if (plan.isFeatured) {
+                <span class="plan__ribbon">Le plus avantageux</span>
+              }
+              <h2 class="plan__name">{{ plan.name }}</h2>
+              <p class="plan__price">{{ plan.priceFcfa | fcfa }}</p>
+              <p class="plan__period">
+                pour {{ durationLabel(plan) }}
+                @if (plan.durationMonths > 1) {
+                  <br />soit {{ monthly(plan) | fcfa }} / mois
+                }
+              </p>
+              <ul class="plan__benefits">
+                @for (b of plan.benefits; track b) {
+                  <li>{{ b }}</li>
+                }
+              </ul>
+              <a
+                class="btn"
+                [class.btn--ghost]="!plan.isFeatured"
+                routerLink="/essai-gratuit"
+                [queryParams]="{ formule: plan.id }"
+              >
+                S'inscrire
+              </a>
+            </article>
+          }
+        </div>
+      }
+    }
+
+    <p class="note">
+      Pas encore décidé ? <a routerLink="/essai-gratuit">Réservez une séance d'essai gratuite</a> :
+      un coach vous fait visiter la salle et vous conseille la formule adaptée.
+    </p>
+  </div>
+</section>

@@ -1,0 +1,86 @@
+<section class="section">
+  <div class="container">
+    <div class="head">
+      <h1>Administration</h1>
+      <button class="btn btn--ghost btn--small" type="button" (click)="auth.logout()">Se déconnecter</button>
+    </div>
+
+    <div class="chips" role="tablist">
+      <button type="button" role="tab" class="chip" [class.is-active]="tab() === 'bookings'" [attr.aria-selected]="tab() === 'bookings'" (click)="tab.set('bookings')">
+        Réservations d'essai
+      </button>
+      <button type="button" role="tab" class="chip" [class.is-active]="tab() === 'messages'" [attr.aria-selected]="tab() === 'messages'" (click)="tab.set('messages')">
+        Messages @if (unread()) { <span class="count">{{ unread() }}</span> }
+      </button>
+    </div>
+
+    @if (error(); as message) {
+      <p class="alert alert--error" role="alert">{{ message }}</p>
+    }
+
+    @if (tab() === 'bookings') {
+      <div class="filters">
+        <label for="status">Statut</label>
+        <select id="status" (change)="filterBy($any($event.target).value)">
+          <option value="" [selected]="statusFilter() === ''">Tous</option>
+          @for (s of statusKeys; track s) {
+            <option [value]="s" [selected]="statusFilter() === s">{{ statuses[s] }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="table-wrap card">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>Heure</th><th>Nom</th><th>Contact</th><th>Objectif</th><th>Formule</th><th>Statut</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (b of bookings(); track b.id) {
+              <tr>
+                <td>{{ formatDate(b.date) }}</td>
+                <td>{{ b.time }}</td>
+                <td>{{ b.fullName }}</td>
+                <td><a [href]="'mailto:' + b.email">{{ b.email }}</a><br />{{ b.phone }}</td>
+                <td>{{ goals[b.goal] }}</td>
+                <td>{{ b.planName ?? '—' }}</td>
+                <td><span class="status status--{{ b.status }}">{{ statuses[b.status] }}</span></td>
+                <td>
+                  <div class="actions">
+                  @if (b.status !== 'confirmed') {
+                    <button class="btn btn--small" type="button" (click)="setStatus(b, 'confirmed')">Confirmer</button>
+                  }
+                  @if (b.status !== 'cancelled') {
+                    <button class="btn btn--small btn--ghost" type="button" (click)="setStatus(b, 'cancelled')">Annuler</button>
+                  }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8" class="state">{{ loading() ? 'Chargement…' : 'Aucune réservation.' }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="messages">
+        @for (m of messages(); track m.id) {
+          <article class="card message" [class.message--unread]="!m.isRead">
+            <header>
+              <strong>{{ m.fullName }}</strong>
+              <span class="muted">{{ formatDate(m.createdAt) }}</span>
+            </header>
+            <p class="muted"><a [href]="'mailto:' + m.email">{{ m.email }}</a>@if (m.phone) { · {{ m.phone }} }</p>
+            <p>{{ m.content }}</p>
+            <button class="btn btn--small btn--ghost" type="button" (click)="toggleRead(m)">
+              {{ m.isRead ? 'Marquer non lu' : 'Marquer lu' }}
+            </button>
+          </article>
+        } @empty {
+          <p class="state">Aucun message.</p>
+        }
+      </div>
+    }
+  </div>
+</section>

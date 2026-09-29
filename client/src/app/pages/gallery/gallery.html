@@ -1,0 +1,43 @@
+<section class="section">
+  <div class="container">
+    <h1>Galerie</h1>
+    <p class="lead">Un aperçu de la salle, de nos équipements et de la vie du club.</p>
+
+    <div class="chips" role="group" aria-label="Filtrer par catégorie">
+      <button type="button" class="chip" [class.is-active]="category() === null" (click)="category.set(null)">
+        Tout
+      </button>
+      @for (c of categories; track c) {
+        <button type="button" class="chip" [class.is-active]="category() === c" (click)="category.set(c)">
+          {{ labels[c] }}
+        </button>
+      }
+    </div>
+
+    @switch (images().status) {
+      @case ('loading') { <p class="state">Chargement de la galerie…</p> }
+      @case ('error') { <p class="state">Impossible de charger la galerie pour le moment.</p> }
+      @case ('ready') {
+        <div class="gallery">
+          @for (img of visible(); track img.id; let i = $index) {
+            <button type="button" class="gallery__item" (click)="open(i)" [attr.aria-label]="'Agrandir : ' + img.altText">
+              <img [src]="img.url" [alt]="img.altText" loading="lazy" width="1200" height="800" />
+            </button>
+          }
+        </div>
+      }
+    }
+  </div>
+</section>
+
+@if (current(); as img) {
+  <div class="lightbox" role="dialog" aria-modal="true" [attr.aria-label]="img.altText" (click)="close()">
+    <button type="button" class="lightbox__close" (click)="close()" aria-label="Fermer">✕</button>
+    <button type="button" class="lightbox__nav lightbox__nav--prev" (click)="$event.stopPropagation(); step(-1)" aria-label="Image précédente">‹</button>
+    <figure (click)="$event.stopPropagation()">
+      <img [src]="img.url" [alt]="img.altText" />
+      <figcaption>{{ img.altText }}</figcaption>
+    </figure>
+    <button type="button" class="lightbox__nav lightbox__nav--next" (click)="$event.stopPropagation(); step(1)" aria-label="Image suivante">›</button>
+  </div>
+}

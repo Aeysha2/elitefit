@@ -1,0 +1,52 @@
+import type { RowDataPacket } from 'mysql2';
+import { pool } from '../config/db.js';
+
+export async function findPlans() {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT id, name, duration_months AS durationMonths, price_fcfa AS priceFcfa, benefits,
+            is_featured AS isFeatured
+       FROM plans ORDER BY sort_order, price_fcfa`,
+  );
+  return rows.map((r) => ({ ...r, isFeatured: Boolean(r.isFeatured) }));
+}
+
+export async function planExists(id: number): Promise<boolean> {
+  const [rows] = await pool.execute<RowDataPacket[]>('SELECT 1 FROM plans WHERE id = ?', [id]);
+  return rows.length > 0;
+}
+
+export async function findTrainers() {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT id, name, specialization, experience_years AS experienceYears, certifications,
+            photo_url AS photoUrl
+       FROM trainers WHERE is_active = TRUE ORDER BY id`,
+  );
+  return rows;
+}
+
+export async function findPrograms(featuredOnly: boolean) {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT id, name, description, duration_weeks AS durationWeeks, level, image_url AS imageUrl,
+            is_featured AS isFeatured
+       FROM programs ${featuredOnly ? 'WHERE is_featured = TRUE' : ''} ORDER BY id`,
+  );
+  return rows.map((r) => ({ ...r, isFeatured: Boolean(r.isFeatured) }));
+}
+
+export async function findTestimonials(limit: number) {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT id, author, rating, content, created_at AS createdAt
+       FROM testimonials WHERE is_published = TRUE ORDER BY created_at DESC, id DESC LIMIT ?`,
+    [String(limit)],
+  );
+  return rows;
+}
+
+export async function findGallery(category?: string) {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT id, url, alt_text AS altText, category
+       FROM gallery_images ${category ? 'WHERE category = ?' : ''} ORDER BY sort_order, id`,
+    category ? [category] : [],
+  );
+  return rows;
+}

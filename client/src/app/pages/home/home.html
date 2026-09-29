@@ -1,0 +1,97 @@
+<section class="hero">
+  <div class="container hero__content">
+    <p class="hero__kicker">Bienvenue chez EliteFit</p>
+    <h1>Transformez votre corps dès aujourd'hui</h1>
+    <p class="hero__text">
+      Une salle ouverte 24 h/24, des coachs diplômés et des programmes adaptés à votre objectif.
+      Votre première séance est offerte.
+    </p>
+    <div class="hero__actions">
+      <a routerLink="/essai-gratuit" class="btn">Réserver mon essai gratuit</a>
+      <a routerLink="/formules" class="btn btn--ghost hero__ghost">Voir les formules</a>
+    </div>
+  </div>
+</section>
+
+<section class="highlights">
+  <div class="container highlights__grid">
+    @for (h of highlights; track h.label) {
+      <div class="highlight">
+        <strong>{{ h.value }}</strong>
+        <span>{{ h.label }}</span>
+      </div>
+    }
+  </div>
+</section>
+
+<section class="section">
+  <div class="container intro">
+    <div>
+      <h2>Plus qu'une salle de sport</h2>
+      <p class="lead">
+        Chez EliteFit, vous vous entraînez quand vous voulez : avant le travail, à la pause
+        déjeuner ou au milieu de la nuit. Plateau de musculation, espace cardio, cours collectifs
+        et coaching personnalisé : tout est pensé pour vous faire progresser.
+      </p>
+      <a routerLink="/coachs" class="btn btn--ghost">Rencontrer nos coachs</a>
+    </div>
+    <img
+      src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=900&q=70&fm=webp"
+      alt="Plateau de musculation EliteFit"
+      width="900"
+      height="600"
+      loading="lazy"
+      class="intro__img"
+    />
+  </div>
+</section>
+
+<section class="section section--alt">
+  <div class="container">
+    <h2>Programmes phares</h2>
+    @switch (programs().status) {
+      @case ('loading') { <p class="state">Chargement des programmes…</p> }
+      @case ('error') { <p class="state">Impossible de charger les programmes pour le moment.</p> }
+      @case ('ready') {
+        <div class="grid">
+          @for (p of programs().data ?? []; track p.id) {
+            <article class="card program">
+              <img [src]="p.imageUrl" [alt]="p.name" loading="lazy" width="800" height="500" />
+              <div class="program__body">
+                <span class="badge">{{ levels[p.level] }} · {{ p.durationWeeks }} semaines</span>
+                <h3>{{ p.name }}</h3>
+                <p>{{ p.description }}</p>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    }
+    <p class="more"><a routerLink="/programmes">Voir tous les programmes →</a></p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2>Ils s'entraînent chez nous</h2>
+    @if (testimonials().status === 'ready') {
+      <div class="grid">
+        @for (t of testimonials().data ?? []; track t.id) {
+          <figure class="card testimonial">
+            <app-stars [rating]="t.rating" />
+            <blockquote>« {{ t.content }} »</blockquote>
+            <figcaption>— {{ t.author }}</figcaption>
+          </figure>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<section class="cta">
+  <div class="container cta__inner">
+    <h2>Prêt à commencer ?</h2>
+    <p>Réservez votre séance d'essai gratuite, à l'heure qui vous convient.</p>
+    <a routerLink="/essai-gratuit" class="btn cta__btn">Je réserve</a>
+  </div>
+</section>

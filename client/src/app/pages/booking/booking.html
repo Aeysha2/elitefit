@@ -1,0 +1,117 @@
+<section class="section">
+  <div class="container booking">
+    <div class="booking__intro">
+      <h1>Séance d'essai gratuite</h1>
+      <p class="lead">
+        Venez découvrir EliteFit avec un coach : visite de la salle, bilan rapide et première
+        séance adaptée à votre objectif. C'est gratuit et sans engagement.
+      </p>
+      <ul class="booking__steps">
+        <li>Choisissez un jour dans les 30 prochains jours.</li>
+        <li>Choisissez l'heure qui vous arrange : la salle est ouverte 24 h/24.</li>
+        <li>Recevez la confirmation par e-mail.</li>
+      </ul>
+    </div>
+
+    <div class="card booking__card">
+      @if (confirmed(); as c) {
+        <div class="alert alert--success" role="status">
+          <h2>C'est réservé !</h2>
+          <p>
+            Votre essai du {{ formatDate(c.date) }} à {{ c.time }} est enregistré. Un e-mail
+            récapitulatif vous a été envoyé ; notre équipe vous confirmera le créneau rapidement.
+          </p>
+          <a routerLink="/" class="btn btn--small">Retour à l'accueil</a>
+        </div>
+      } @else {
+        <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <div class="field">
+            <label for="fullName">Nom complet</label>
+            <input id="fullName" formControlName="fullName" autocomplete="name" />
+            @if (hasError('fullName', 'required') || hasError('fullName', 'minlength')) {
+              <span class="field-error">Indiquez votre nom (2 caractères minimum).</span>
+            }
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="email">E-mail</label>
+              <input id="email" type="email" formControlName="email" autocomplete="email" />
+              @if (hasError('email', 'required') || hasError('email', 'email')) {
+                <span class="field-error">Indiquez une adresse e-mail valide.</span>
+              }
+            </div>
+            <div class="field">
+              <label for="phone">Téléphone</label>
+              <input id="phone" type="tel" formControlName="phone" autocomplete="tel" placeholder="+225 07 00 00 00 00" />
+              @if (hasError('phone', 'required') || hasError('phone', 'pattern')) {
+                <span class="field-error">Numéro invalide (8 à 15 chiffres).</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="date">Date souhaitée</label>
+              <input id="date" type="date" formControlName="date" [min]="minDate" [max]="maxDate" />
+              @if (hasError('date', 'required')) {
+                <span class="field-error">Choisissez une date.</span>
+              }
+              @if (hasError('date', 'dateRange')) {
+                <span class="field-error">Choisissez une date entre demain et dans 30 jours.</span>
+              }
+            </div>
+            <div class="field">
+              <label for="time">Heure souhaitée</label>
+              <select id="time" formControlName="time">
+                <option value="" disabled>
+                  {{ slotsLoading() ? 'Chargement…' : form.controls.date.valid ? 'Choisir une heure' : 'Choisissez d\'abord une date' }}
+                </option>
+                @for (s of slots(); track s.time) {
+                  <option [value]="s.time" [disabled]="s.remaining === 0">
+                    {{ s.time }}{{ s.remaining === 0 ? ' — complet' : '' }}
+                  </option>
+                }
+              </select>
+              @if (hasError('time', 'required')) {
+                <span class="field-error">Choisissez une heure.</span>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="goal">Votre objectif</label>
+              <select id="goal" formControlName="goal">
+                <option value="" disabled>Choisir un objectif</option>
+                @for (g of goals; track g[0]) {
+                  <option [value]="g[0]">{{ g[1] }}</option>
+                }
+              </select>
+              @if (hasError('goal', 'required')) {
+                <span class="field-error">Choisissez un objectif.</span>
+              }
+            </div>
+            <div class="field">
+              <label for="planId">Formule qui vous intéresse <small>(facultatif)</small></label>
+              <select id="planId" formControlName="planId">
+                <option value="">Je ne sais pas encore</option>
+                @for (p of plans().data ?? []; track p.id) {
+                  <option [value]="p.id">{{ p.name }} — {{ p.priceFcfa | fcfa }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          @if (error(); as message) {
+            <p class="alert alert--error" role="alert">{{ message }}</p>
+          }
+
+          <button class="btn" type="submit" [disabled]="submitting()">
+            {{ submitting() ? 'Envoi…' : 'Réserver mon essai gratuit' }}
+          </button>
+        </form>
+      }
+    </div>
+  </div>
+</section>
