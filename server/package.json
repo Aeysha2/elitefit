@@ -12,7 +12,8 @@
     "create-admin": "tsx src/scripts/createAdmin.ts",
     "db:schema": "tsx src/scripts/runSql.ts database/schema.sql",
     "db:seed": "tsx src/scripts/runSql.ts database/seed.sql",
-    "db:migrate": "tsx src/scripts/migrate.ts"
+    "db:migrate": "tsx src/scripts/migrate.ts",
+    "db:demo": "tsx src/scripts/demo.ts"
   },
   "author": "",
   "license": "UNLICENSED",

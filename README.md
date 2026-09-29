@@ -53,6 +53,23 @@ Les scripts npm du client utilisent le compilateur Sass en JavaScript (`NG_BUILD
 - Les abonnements sont enregistrés par l'admin après paiement à l'accueil (fiche du membre → Abonnements).
 - Connexion : 5 tentatives **échouées** par 15 minutes et par adresse IP ; les connexions réussies ne comptent pas.
 
+### Comptes de démonstration
+
+Pour voir ce que voit chaque rôle, en local uniquement :
+
+```bash
+cd server
+npm run db:demo
+```
+
+| Rôle | E-mail | Mot de passe | Ce qu'on y trouve |
+| --- | --- | --- | --- |
+| Admin | `admin@demo.elitefit.test` | `DemoAdmin2026` | Un essai à attribuer à un coach, l'onglet Comptes |
+| Coach | `coach@demo.elitefit.test` | `DemoCoach2026` | Relié à la fiche « Moussa Diallo », un essai à confirmer |
+| Membre | `membre@demo.elitefit.test` | `DemoMembre2026` | Un abonnement annuel en cours et un essai confirmé |
+
+La commande peut être relancée pour remettre ces données à zéro. Elle est refusée quand `NODE_ENV=production` : ne créez jamais ces comptes sur le site en ligne.
+
 ### Mettre à jour une base existante
 
 Les changements de structure sont livrés sous forme de migrations dans `server/database/migrations/`. Sur une base déjà créée, lancez :
@@ -74,6 +91,7 @@ Chaque migration n'est appliquée qu'une fois ; relancer la commande ne fait rie
 | server | `npm run db:schema` / `npm run db:seed` | Création des tables / données de démonstration |
 | server | `npm run db:migrate` | Applique les migrations manquantes à une base existante |
 | server | `npm run create-admin` | Crée ou met à jour un administrateur |
+| server | `npm run db:demo` | Comptes et données de démonstration (admin, coach, membre) |
 | client | `npm start` | Serveur de développement |
 | client | `npm test` | Tests unitaires |
 | client | `npm run build` | Build de production dans `client/dist/client/browser` |
