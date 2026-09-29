@@ -9,7 +9,7 @@ Site web de la salle de sport **EliteFit**, ouverte 24 h/24 et 7 j/7 : présenta
 
 ## Démarrage en local
 
-Prérequis : Node.js 24 (ou 22.22.3+), npm, MySQL 8.
+Prérequis : Node.js 24 (ou 22.22.3+), npm, et MySQL 8 ou MariaDB 10.4+ (XAMPP / WAMP conviennent).
 
 ### 1. API
 
@@ -22,6 +22,8 @@ npm run db:seed               # formules, coachs, programmes, galerie, créneaux
 npm run create-admin          # demande l'e-mail et le mot de passe de l'admin
 npm run dev                   # http://localhost:3000/api/health
 ```
+
+La base `elitefit` et ses tables sont créées par `npm run db:schema` : rien à faire dans phpMyAdmin. Avec XAMPP ou WAMP, mettre `DB_USER=root` et laisser `DB_PASSWORD=` vide. Autre possibilité : créer la base `elitefit` dans phpMyAdmin, puis importer `server/database/schema.sql` et `server/database/seed.sql` (onglet Importer).
 
 Sans `SMTP_HOST`, les e-mails de confirmation sont affichés dans la console de l'API.
 

@@ -1,13 +1,18 @@
 import type { RowDataPacket } from 'mysql2';
 import { pool } from '../config/db.js';
 
+/** MariaDB (XAMPP, WAMP) peut renvoyer les colonnes JSON sous forme de texte. */
+function jsonArray(value: unknown): string[] {
+  return typeof value === 'string' ? JSON.parse(value) : (value as string[]);
+}
+
 export async function findPlans() {
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT id, name, duration_months AS durationMonths, price_fcfa AS priceFcfa, benefits,
             is_featured AS isFeatured
        FROM plans ORDER BY sort_order, price_fcfa`,
   );
-  return rows.map((r) => ({ ...r, isFeatured: Boolean(r.isFeatured) }));
+  return rows.map((r) => ({ ...r, benefits: jsonArray(r.benefits), isFeatured: Boolean(r.isFeatured) }));
 }
 
 export async function planExists(id: number): Promise<boolean> {
@@ -21,7 +26,7 @@ export async function findTrainers() {
             photo_url AS photoUrl
        FROM trainers WHERE is_active = TRUE ORDER BY id`,
   );
-  return rows;
+  return rows.map((r) => ({ ...r, certifications: jsonArray(r.certifications) }));
 }
 
 export async function findPrograms(featuredOnly: boolean) {
