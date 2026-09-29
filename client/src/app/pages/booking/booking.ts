@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { catchError, distinctUntilChanged, filter, of, switchMap, tap } from 'rxjs';
 import { apiErrorMessage } from '../../core/api-error';
 import { ApiService } from '../../core/api.service';
+import { AuthService } from '../../core/auth.service';
 import { Goal, GOAL_LABELS, Slot } from '../../core/models';
 import { loadable } from '../../core/resource';
 import { dateInRange, isoDateFromToday, PHONE_PATTERN } from '../../core/validators';
@@ -19,6 +20,7 @@ import { FcfaPipe } from '../../shared/fcfa.pipe';
 export class Booking {
   private readonly api = inject(ApiService);
   private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
 
   /** ?formule=4 depuis la page des formules */
   readonly formule = input<string>();
@@ -68,6 +70,11 @@ export class Booking {
   }
 
   ngOnInit() {
+    // Membre connecté : coordonnées pré-remplies.
+    const user = this.auth.user();
+    if (user) {
+      this.form.patchValue({ fullName: user.fullName, email: user.email, phone: user.phone ?? '' });
+    }
     const planId = this.formule();
     if (planId && /^\d+$/.test(planId)) this.form.controls.planId.setValue(planId);
   }

@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline';
 import { pool } from '../config/db.js';
-import { upsertAdmin } from '../models/admin.model.js';
+import { upsertAdmin } from '../models/user.model.js';
 
 // Lecture ligne par ligne : fonctionne au clavier comme avec une entrée redirigée.
 const lines = createInterface({ input })[Symbol.asyncIterator]();

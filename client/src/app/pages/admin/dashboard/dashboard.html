@@ -12,6 +12,9 @@
       <button type="button" role="tab" class="chip" [class.is-active]="tab() === 'messages'" [attr.aria-selected]="tab() === 'messages'" (click)="tab.set('messages')">
         Messages @if (unread()) { <span class="count">{{ unread() }}</span> }
       </button>
+      <button type="button" role="tab" class="chip" [class.is-active]="tab() === 'users'" [attr.aria-selected]="tab() === 'users'" (click)="tab.set('users')">
+        Comptes
+      </button>
     </div>
 
     @if (error(); as message) {
@@ -21,10 +24,17 @@
     @if (tab() === 'bookings') {
       <div class="filters">
         <label for="status">Statut</label>
-        <select id="status" (change)="filterBy($any($event.target).value)">
+        <select id="status" (change)="filterByStatus($any($event.target).value)">
           <option value="" [selected]="statusFilter() === ''">Tous</option>
           @for (s of statusKeys; track s) {
             <option [value]="s" [selected]="statusFilter() === s">{{ statuses[s] }}</option>
+          }
+        </select>
+        <label for="coach-filter">Coach</label>
+        <select id="coach-filter" (change)="filterByTrainer($any($event.target).value)">
+          <option value="0">Tous</option>
+          @for (t of trainers(); track t.id) {
+            <option [value]="t.id">{{ t.name }}</option>
           }
         </select>
       </div>
@@ -33,7 +43,7 @@
         <table>
           <thead>
             <tr>
-              <th>Date</th><th>Heure</th><th>Nom</th><th>Contact</th><th>Objectif</th><th>Formule</th><th>Statut</th><th>Actions</th>
+              <th>Date</th><th>Heure</th><th>Nom</th><th>Contact</th><th>Objectif</th><th>Formule</th><th>Coach</th><th>Statut</th><th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -45,6 +55,14 @@
                 <td><a [href]="'mailto:' + b.email">{{ b.email }}</a><br />{{ b.phone }}</td>
                 <td>{{ goals[b.goal] }}</td>
                 <td>{{ b.planName ?? '—' }}</td>
+                <td>
+                  <select class="assign" (change)="assign(b, $any($event.target).value)" [attr.aria-label]="'Coach pour ' + b.fullName">
+                    <option value="" [selected]="!b.trainerId">— À attribuer —</option>
+                    @for (t of trainers(); track t.id) {
+                      <option [value]="t.id" [selected]="b.trainerId === t.id">{{ t.name }}</option>
+                    }
+                  </select>
+                </td>
                 <td><span class="status status--{{ b.status }}">{{ statuses[b.status] }}</span></td>
                 <td>
                   <div class="actions">
@@ -58,11 +76,13 @@
                 </td>
               </tr>
             } @empty {
-              <tr><td colspan="8" class="state">{{ loading() ? 'Chargement…' : 'Aucune réservation.' }}</td></tr>
+              <tr><td colspan="9" class="state">{{ loading() ? 'Chargement…' : 'Aucune réservation.' }}</td></tr>
             }
           </tbody>
         </table>
       </div>
+    } @else if (tab() === 'users') {
+      <app-admin-users [trainers]="trainers()" [plans]="plans()" />
     } @else {
       <div class="messages">
         @for (m of messages(); track m.id) {

@@ -3,6 +3,7 @@ import { body, query } from 'express-validator';
 import * as booking from '../controllers/booking.controller.js';
 import * as content from '../controllers/content.controller.js';
 import * as message from '../controllers/message.controller.js';
+import { optionalAuth } from '../middleware/auth.js';
 import { formLimiter } from '../middleware/rateLimit.js';
 import { validate } from '../middleware/validate.js';
 
@@ -32,8 +33,9 @@ publicRouter.get(
 publicRouter.post(
   '/bookings',
   formLimiter(),
+  optionalAuth,
   body('fullName').trim().isLength({ min: 2, max: 100 }).withMessage('Nom : 2 à 100 caractères'),
-  body('email').trim().isEmail().withMessage('E-mail invalide').normalizeEmail(),
+  body('email').trim().isEmail().withMessage('E-mail invalide').toLowerCase(),
   body('phone').trim().matches(PHONE).withMessage('Téléphone invalide'),
   body('date').isISO8601({ strict: true }).withMessage('Date invalide (AAAA-MM-JJ)'),
   body('time').matches(/^([01]\d|2[0-3]):00$/).withMessage('Heure invalide (HH:00)'),
@@ -47,7 +49,7 @@ publicRouter.post(
   '/messages',
   formLimiter(),
   body('fullName').trim().isLength({ min: 2, max: 100 }).withMessage('Nom : 2 à 100 caractères'),
-  body('email').trim().isEmail().withMessage('E-mail invalide').normalizeEmail(),
+  body('email').trim().isEmail().withMessage('E-mail invalide').toLowerCase(),
   body('phone').optional({ values: 'falsy' }).trim().matches(PHONE).withMessage('Téléphone invalide'),
   body('content').trim().isLength({ min: 10, max: 1000 }).withMessage('Message : 10 à 1 000 caractères'),
   validate,

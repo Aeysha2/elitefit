@@ -27,6 +27,12 @@
       >
         {{ theme.theme() === 'dark' ? '☀' : '☾' }}
       </button>
+      @if (auth.isLoggedIn()) {
+        <a [routerLink]="auth.home()" routerLinkActive="is-active" class="account-link" (click)="close()">{{ spaceLabel() }}</a>
+        <button type="button" class="link-button" (click)="logout()">Déconnexion</button>
+      } @else {
+        <a routerLink="/connexion" routerLinkActive="is-active" class="account-link" (click)="close()">Connexion</a>
+      }
       <a routerLink="/essai-gratuit" class="btn btn--small" (click)="close()">Essai gratuit</a>
     </nav>
   </div>

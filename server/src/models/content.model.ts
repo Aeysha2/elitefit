@@ -16,8 +16,31 @@ export async function findPlans() {
 }
 
 export async function planExists(id: number): Promise<boolean> {
-  const [rows] = await pool.execute<RowDataPacket[]>('SELECT 1 FROM plans WHERE id = ?', [id]);
+  return (await findPlanById(id)) !== undefined;
+}
+
+export async function findPlanById(
+  id: number,
+): Promise<{ id: number; name: string; durationMonths: number; priceFcfa: number } | undefined> {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `SELECT id, name, duration_months AS durationMonths, price_fcfa AS priceFcfa
+       FROM plans WHERE id = ?`,
+    [id],
+  );
+  return rows[0] as { id: number; name: string; durationMonths: number; priceFcfa: number } | undefined;
+}
+
+export async function trainerExists(id: number): Promise<boolean> {
+  const [rows] = await pool.execute<RowDataPacket[]>('SELECT 1 FROM trainers WHERE id = ?', [id]);
   return rows.length > 0;
+}
+
+/** Tous les coachs (actifs ou non) pour les listes de l'administration. */
+export async function findAllTrainers() {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    'SELECT id, name, is_active AS isActive FROM trainers ORDER BY name',
+  );
+  return rows.map((r) => ({ id: r.id as number, name: r.name as string, isActive: Boolean(r.isActive) }));
 }
 
 export async function findTrainers() {

@@ -23,3 +23,15 @@ export function bookingWindow(now = new Date()): { min: string; max: string } {
   const today = todayIso(now);
   return { min: addDays(today, 1), max: addDays(today, 30) };
 }
+
+/**
+ * Date de fin d'un abonnement de n mois commençant à `iso` (dernier jour inclus).
+ * 2026-03-15 + 1 mois → 2026-04-14 ; 2026-01-31 + 1 mois → 2026-02-27 (fin de mois ramenée au 28).
+ */
+export function addMonths(iso: string, months: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  const target = new Date(Date.UTC(y, m - 1 + months, 1));
+  const lastDay = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
+  target.setUTCDate(Math.min(d, lastDay));
+  return addDays(target.toISOString().slice(0, 10), -1);
+}

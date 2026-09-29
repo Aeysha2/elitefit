@@ -1,0 +1,161 @@
+<div class="toolbar">
+  <input
+    class="search"
+    type="search"
+    placeholder="Rechercher un nom, un e-mail, un téléphone…"
+    [ngModel]="search()"
+    (ngModelChange)="search.set($event)"
+    (keyup.enter)="load()"
+    aria-label="Rechercher un compte"
+  />
+  <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event); load()" aria-label="Filtrer par rôle">
+    <option value="">Tous les rôles</option>
+    @for (r of roleKeys; track r) {
+      <option [value]="r">{{ roles[r] }}</option>
+    }
+  </select>
+  <button class="btn btn--small btn--ghost" type="button" (click)="load()">Rechercher</button>
+  <button class="btn btn--small" type="button" (click)="showCreate.set(!showCreate())">
+    {{ showCreate() ? 'Fermer' : 'Nouveau compte' }}
+  </button>
+</div>
+
+@if (notice(); as n) {
+  <p class="alert alert--success" role="status">{{ n }}</p>
+}
+@if (error(); as e) {
+  <p class="alert alert--error" role="alert">{{ e }}</p>
+}
+
+@if (showCreate()) {
+  <form class="card create form" [formGroup]="createForm" (ngSubmit)="create()" novalidate>
+    <h3>Créer un compte</h3>
+    <div class="form-row">
+      <div class="field">
+        <label for="u-name">Nom complet</label>
+        <input id="u-name" formControlName="fullName" />
+      </div>
+      <div class="field">
+        <label for="u-email">E-mail</label>
+        <input id="u-email" type="email" formControlName="email" />
+      </div>
+      <div class="field">
+        <label for="u-phone">Téléphone</label>
+        <input id="u-phone" type="tel" formControlName="phone" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label for="u-password">Mot de passe provisoire ({{ min }}+ caractères)</label>
+        <input id="u-password" type="text" formControlName="password" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="u-role">Rôle</label>
+        <select id="u-role" formControlName="role">
+          @for (r of roleKeys; track r) {
+            <option [value]="r">{{ roles[r] }}</option>
+          }
+        </select>
+      </div>
+      @if (createForm.controls.role.value === 'coach') {
+        <div class="field">
+          <label for="u-trainer">Fiche coach</label>
+          <select id="u-trainer" formControlName="trainerId">
+            <option [ngValue]="null">— Aucune —</option>
+            @for (t of trainers(); track t.id) {
+              <option [ngValue]="t.id">{{ t.name }}</option>
+            }
+          </select>
+        </div>
+      }
+    </div>
+    @if (createForm.invalid && createForm.touched) {
+      <p class="field-error">Vérifiez le nom, l'e-mail et le mot de passe ({{ min }} caractères minimum).</p>
+    }
+    <div><button class="btn btn--small" type="submit">Créer le compte</button></div>
+  </form>
+}
+
+<div class="table-wrap card">
+  <table>
+    <thead>
+      <tr>
+        <th>Nom</th><th>Contact</th><th>Rôle</th><th>Fiche coach</th><th>Statut</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (u of users(); track u.id) {
+        <tr [class.is-inactive]="!u.isActive">
+          <td>
+            <strong>{{ u.fullName }}</strong>
+            @if (isSelf(u)) { <span class="badge">vous</span> }
+            <br /><span class="muted">depuis le {{ formatDate(u.createdAt) }}</span>
+          </td>
+          <td><a [href]="'mailto:' + u.email">{{ u.email }}</a>@if (u.phone) { <br />{{ u.phone }} }</td>
+          <td>
+            <select [ngModel]="u.role" (ngModelChange)="changeRole(u, $event)" [disabled]="isSelf(u)" [attr.aria-label]="'Rôle de ' + u.fullName">
+              @for (r of roleKeys; track r) {
+                <option [value]="r">{{ roles[r] }}</option>
+              }
+            </select>
+          </td>
+          <td>
+            @if (u.role === 'coach') {
+              <select [ngModel]="u.trainerId ?? ''" (ngModelChange)="changeTrainer(u, $event)" [attr.aria-label]="'Fiche coach de ' + u.fullName">
+                <option value="">— Aucune —</option>
+                @for (t of trainers(); track t.id) {
+                  <option [value]="t.id">{{ t.name }}</option>
+                }
+              </select>
+            } @else {
+              <span class="muted">—</span>
+            }
+          </td>
+          <td>
+            <span class="state-pill" [class.state-pill--off]="!u.isActive">{{ u.isActive ? 'Actif' : 'Désactivé' }}</span>
+          </td>
+          <td>
+            <div class="actions">
+              @if (u.role === 'member') {
+                <button class="btn btn--small" type="button" (click)="openSubscriptions(u)">Abonnements</button>
+              }
+              <button class="btn btn--small btn--ghost" type="button" (click)="resetPassword(u)">Mot de passe</button>
+              @if (!isSelf(u)) {
+                <button class="btn btn--small btn--ghost" type="button" (click)="toggleActive(u)">
+                  {{ u.isActive ? 'Désactiver' : 'Réactiver' }}
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="6" class="state">Aucun compte.</td></tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (selected(); as user) {
+  <section class="card subs">
+    <div class="subs__head">
+      <h3>Abonnements de {{ user.fullName }}</h3>
+      <button class="btn btn--small btn--ghost" type="button" (click)="selected.set(null)">Fermer</button>
+    </div>
+    <div class="subs__add">
+      <select [(ngModel)]="newPlanId" aria-label="Formule">
+        @for (p of plans(); track p.id) {
+          <option [ngValue]="p.id">{{ p.name }} — {{ p.priceFcfa | fcfa }}</option>
+        }
+      </select>
+      <label>à partir du <input type="date" [(ngModel)]="newStartDate" /></label>
+      <button class="btn btn--small" type="button" (click)="addSubscription()">Enregistrer le paiement</button>
+    </div>
+    <ul>
+      @for (s of subscriptions(); track s.id) {
+        <li>{{ s.planName }} · du {{ formatDate(s.startDate) }} au {{ formatDate(s.endDate) }} · {{ s.amountFcfa | fcfa }}</li>
+      } @empty {
+        <li class="muted">Aucun abonnement enregistré.</li>
+      }
+    </ul>
+  </section>
+}

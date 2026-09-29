@@ -1,0 +1,117 @@
+<section class="section">
+  <div class="container">
+    <div class="head">
+      <div>
+        <h1>Mon compte</h1>
+        <p class="lead">
+          Bonjour {{ auth.user()?.fullName }}
+          <span class="badge">{{ roles[auth.user()?.role ?? 'member'] }}</span>
+        </p>
+      </div>
+      <button class="btn btn--ghost btn--small" type="button" (click)="auth.logout()">Se déconnecter</button>
+    </div>
+
+    <div class="account-grid">
+      <article class="card panel">
+        <h2 class="panel__title">Mon abonnement</h2>
+        @switch (subscriptions().status) {
+          @case ('loading') { <p class="state">Chargement…</p> }
+          @case ('error') { <p class="state">Impossible de charger votre abonnement.</p> }
+          @case ('ready') {
+            @if (subscriptions().data?.current; as current) {
+              <p class="sub__name">{{ current.planName }}</p>
+              <p>Du {{ formatDate(current.startDate) }} au {{ formatDate(current.endDate) }}</p>
+              <p class="sub__left">{{ daysLeft(current.endDate) }} jour(s) restant(s)</p>
+            } @else {
+              <p>Vous n'avez pas d'abonnement en cours.</p>
+              <p class="muted">Choisissez une formule et réglez-la à l'accueil : elle apparaîtra ici.</p>
+              <a routerLink="/formules" class="btn btn--small">Voir les formules</a>
+            }
+            @if ((subscriptions().data?.history?.length ?? 0) > 1) {
+              <details class="history">
+                <summary>Historique</summary>
+                <ul>
+                  @for (s of subscriptions().data?.history ?? []; track s.id) {
+                    <li>{{ s.planName }} · {{ formatDate(s.startDate) }} → {{ formatDate(s.endDate) }} · {{ s.amountFcfa | fcfa }}</li>
+                  }
+                </ul>
+              </details>
+            }
+          }
+        }
+      </article>
+
+      <article class="card panel">
+        <h2 class="panel__title">Mes séances d'essai</h2>
+        @switch (bookings().status) {
+          @case ('loading') { <p class="state">Chargement…</p> }
+          @case ('error') { <p class="state">Impossible de charger vos réservations.</p> }
+          @case ('ready') {
+            <ul class="bookings">
+              @for (b of bookings().data ?? []; track b.id) {
+                <li>
+                  <strong>{{ formatDate(b.date) }} à {{ b.time }}</strong>
+                  <span class="status status--{{ b.status }}">{{ statuses[b.status] }}</span>
+                  <span class="muted">{{ goals[b.goal] }}@if (b.trainerName) { · avec {{ b.trainerName }} }</span>
+                </li>
+              } @empty {
+                <li class="muted">Aucune réservation pour l'instant.</li>
+              }
+            </ul>
+            <a routerLink="/essai-gratuit" class="btn btn--small btn--ghost">Réserver un essai</a>
+          }
+        }
+      </article>
+
+      <article class="card panel">
+        <h2 class="panel__title">Mon profil</h2>
+        <form class="form" [formGroup]="profile" (ngSubmit)="saveProfile()" novalidate>
+          <div class="field">
+            <label for="p-name">Nom complet</label>
+            <input id="p-name" formControlName="fullName" autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="p-email">E-mail</label>
+            <input id="p-email" [value]="auth.user()?.email" disabled />
+          </div>
+          <div class="field">
+            <label for="p-phone">Téléphone</label>
+            <input id="p-phone" type="tel" formControlName="phone" autocomplete="tel" />
+            @if (profile.controls.phone.invalid && profile.controls.phone.touched) {
+              <span class="field-error">Numéro invalide (8 à 15 chiffres).</span>
+            }
+          </div>
+          @if (profileMessage(); as m) {
+            <p class="alert" [class.alert--success]="m.ok" [class.alert--error]="!m.ok" role="status">{{ m.text }}</p>
+          }
+          <button class="btn btn--small" type="submit" [disabled]="profile.pristine">Enregistrer</button>
+        </form>
+      </article>
+
+      <article class="card panel">
+        <h2 class="panel__title">Mot de passe</h2>
+        <form class="form" [formGroup]="password" (ngSubmit)="savePassword()" novalidate>
+          <div class="field">
+            <label for="pw-current">Mot de passe actuel</label>
+            <input id="pw-current" type="password" formControlName="currentPassword" autocomplete="current-password" />
+          </div>
+          <div class="field">
+            <label for="pw-new">Nouveau mot de passe ({{ min }} caractères minimum)</label>
+            <input id="pw-new" type="password" formControlName="password" autocomplete="new-password" />
+          </div>
+          <div class="field">
+            <label for="pw-confirm">Confirmer</label>
+            <input id="pw-confirm" type="password" formControlName="confirm" autocomplete="new-password" />
+            @if (password.hasError('mismatch') && password.controls.confirm.touched) {
+              <span class="field-error">Les deux mots de passe ne correspondent pas.</span>
+            }
+          </div>
+          @if (passwordMessage(); as m) {
+            <p class="alert" [class.alert--success]="m.ok" [class.alert--error]="!m.ok" role="status">{{ m.text }}</p>
+          }
+          <button class="btn btn--small" type="submit">Changer le mot de passe</button>
+        </form>
+      </article>
+    </div>
+  </div>
+</section>

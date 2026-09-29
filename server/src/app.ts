@@ -4,8 +4,8 @@ import helmet from 'helmet';
 import { pool } from './config/db.js';
 import { env } from './config/env.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
-import { adminRouter } from './routes/admin.routes.js';
-import { authRouter } from './routes/auth.routes.js';
+import { adminRouter, coachRouter } from './routes/admin.routes.js';
+import { authRouter, meRouter } from './routes/auth.routes.js';
 import { publicRouter } from './routes/public.routes.js';
 
 export function createApp() {
@@ -22,7 +22,9 @@ export function createApp() {
   });
 
   app.use('/api/auth', authRouter);
+  app.use('/api/me', meRouter);
   app.use('/api/admin', adminRouter);
+  app.use('/api/coach', coachRouter);
   app.use('/api', publicRouter);
 
   app.use(notFound);

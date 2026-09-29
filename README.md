@@ -39,6 +39,31 @@ L'espace admin est sur http://localhost:4200/admin.
 
 Les scripts npm du client utilisent le compilateur Sass en JavaScript (`NG_BUILD_SASS_EMBEDDED=0`), car le compilateur natif exige macOS 14. Lancez donc le site avec `npm start` et `npm run build`, pas avec `ng serve` ou `ng build` directement.
 
+## Comptes et rôles
+
+| Rôle | Création du compte | Accès |
+| --- | --- | --- |
+| Membre | Inscription libre sur `/inscription` | `/mon-compte` : profil, mot de passe, séances d'essai, abonnement en cours |
+| Coach | Créé par un admin (onglet Comptes), relié à une fiche coach | `/coach` : essais qui lui sont attribués, confirmation ou annulation |
+| Admin | `npm run create-admin`, ou promotion d'un compte existant | `/admin` : réservations (attribution d'un coach), messages, comptes, abonnements |
+
+- Tout le monde se connecte sur `/connexion` et arrive dans son espace.
+- Un changement de rôle ou une désactivation s'applique immédiatement, même si la personne est déjà connectée.
+- Un admin ne peut pas se retirer ses propres droits, et il reste toujours au moins un admin actif.
+- Les abonnements sont enregistrés par l'admin après paiement à l'accueil (fiche du membre → Abonnements).
+- Connexion : 5 tentatives **échouées** par 15 minutes et par adresse IP ; les connexions réussies ne comptent pas.
+
+### Mettre à jour une base existante
+
+Les changements de structure sont livrés sous forme de migrations dans `server/database/migrations/`. Sur une base déjà créée, lancez :
+
+```bash
+cd server
+npm run db:migrate
+```
+
+Chaque migration n'est appliquée qu'une fois ; relancer la commande ne fait rien si la base est à jour. Une base neuve (`npm run db:schema`) contient déjà toutes les migrations.
+
 ## Scripts
 
 | Dossier | Commande | Effet |
@@ -47,6 +72,7 @@ Les scripts npm du client utilisent le compilateur Sass en JavaScript (`NG_BUILD
 | server | `npm test` | Tests (Vitest + Supertest, sans base réelle) |
 | server | `npm run build` / `npm start` | Compilation puis démarrage en production |
 | server | `npm run db:schema` / `npm run db:seed` | Création des tables / données de démonstration |
+| server | `npm run db:migrate` | Applique les migrations manquantes à une base existante |
 | server | `npm run create-admin` | Crée ou met à jour un administrateur |
 | client | `npm start` | Serveur de développement |
 | client | `npm test` | Tests unitaires |
@@ -54,7 +80,7 @@ Les scripts npm du client utilisent le compilateur Sass en JavaScript (`NG_BUILD
 
 ## API
 
-Toutes les routes sont préfixées par `/api`. Les routes `/api/admin/*` exigent `Authorization: Bearer <jwt>`.
+Toutes les routes sont préfixées par `/api`. Les routes protégées exigent `Authorization: Bearer <jwt>` (obtenu à la connexion).
 
 | Méthode | Route | Accès |
 | --- | --- | --- |
@@ -63,8 +89,13 @@ Toutes les routes sont préfixées par `/api`. Les routes `/api/admin/*` exigent
 | GET | `/bookings/availability?date=AAAA-MM-JJ` | Public |
 | POST | `/bookings`, `/messages` | Public (5 envois / 15 min / IP) |
 | POST | `/auth/login` | Public |
-| GET / PATCH | `/admin/bookings`, `/admin/bookings/:id` | Admin |
+| POST | `/auth/register` | Public (crée un compte membre) |
+| GET / PATCH | `/me`, `/me/password`, `/me/bookings`, `/me/subscriptions` | Connecté |
+| GET / PATCH | `/admin/bookings`, `/admin/bookings/:id` (statut, coach attribué) | Admin |
 | GET / PATCH | `/admin/messages`, `/admin/messages/:id` | Admin |
+| GET / POST / PATCH | `/admin/users`, `/admin/users/:id`, `/admin/trainers` | Admin |
+| GET / POST | `/admin/users/:id/subscriptions` | Admin |
+| GET / PATCH | `/coach/bookings`, `/coach/bookings/:id` | Coach |
 
 Règles de réservation : date entre demain et J+30, créneaux d'une heure (24 h/24), 3 places par créneau, un seul essai en cours par e-mail.
 

@@ -67,6 +67,8 @@ export interface Booking extends BookingRequest {
   id: number;
   status: BookingStatus;
   planName: string | null;
+  trainerId: number | null;
+  trainerName: string | null;
   createdAt: string;
 }
 
@@ -108,3 +110,62 @@ export const STATUS_LABELS: Record<BookingStatus, string> = {
   confirmed: 'Confirmée',
   cancelled: 'Annulée',
 };
+
+export type Role = 'admin' | 'coach' | 'member';
+
+export const ROLE_LABELS: Record<Role, string> = {
+  admin: 'Administrateur',
+  coach: 'Coach',
+  member: 'Membre',
+};
+
+export interface User {
+  id: number;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  role: Role;
+  trainerId: number | null;
+  trainerName: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+export interface TrainerOption {
+  id: number;
+  name: string;
+  isActive: boolean;
+}
+
+export interface Subscription {
+  id: number;
+  planId: number | null;
+  planName: string;
+  amountFcfa: number;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+}
+
+export interface NewUserRequest {
+  fullName: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: Role;
+  trainerId: number | null;
+}
+
+export type UserChanges = Partial<{
+  fullName: string;
+  phone: string;
+  role: Role;
+  trainerId: number | null;
+  isActive: boolean;
+  password: string;
+}>;

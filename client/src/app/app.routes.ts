@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminGuard } from './core/admin.guard';
+import { guestGuard, roleGuard } from './core/role.guard';
 
 export const routes: Routes = [
   {
@@ -45,13 +45,34 @@ export const routes: Routes = [
     data: { description: 'Une question ? Contactez l\'équipe EliteFit.' },
   },
   {
-    path: 'admin/login',
-    loadComponent: () => import('./pages/admin/login/login').then((m) => m.Login),
-    title: 'Connexion admin — EliteFit',
+    path: 'connexion',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/auth/login/login').then((m) => m.Login),
+    title: 'Connexion — EliteFit',
   },
   {
+    path: 'inscription',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/auth/register/register').then((m) => m.Register),
+    title: 'Créer un compte — EliteFit',
+    data: { description: 'Créez votre compte EliteFit pour suivre vos réservations et votre abonnement.' },
+  },
+  {
+    path: 'mon-compte',
+    canActivate: [roleGuard()],
+    loadComponent: () => import('./pages/account/account').then((m) => m.Account),
+    title: 'Mon compte — EliteFit',
+  },
+  {
+    path: 'coach',
+    canActivate: [roleGuard('coach')],
+    loadComponent: () => import('./pages/coach/coach').then((m) => m.Coach),
+    title: 'Espace coach — EliteFit',
+  },
+  { path: 'admin/login', redirectTo: 'connexion' },
+  {
     path: 'admin',
-    canActivate: [adminGuard],
+    canActivate: [roleGuard('admin')],
     loadComponent: () => import('./pages/admin/dashboard/dashboard').then((m) => m.Dashboard),
     title: 'Administration — EliteFit',
   },

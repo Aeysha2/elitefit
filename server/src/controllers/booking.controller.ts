@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import * as bookings from '../models/booking.model.js';
-import { planExists } from '../models/content.model.js';
+import { planExists, trainerExists } from '../models/content.model.js';
 import { bookingMail, sendMail } from '../services/mailer.js';
 import { bookingWindow, isoWeekday } from '../utils/dates.js';
 import { HttpError } from '../utils/httpError.js';
@@ -23,6 +23,7 @@ export async function createBooking(req: Request, res: Response) {
     time: req.body.time,
     goal: req.body.goal,
     planId: req.body.planId ?? null,
+    userId: req.user?.id ?? null,
   };
 
   const { min, max } = bookingWindow();
@@ -55,17 +56,61 @@ export async function createBooking(req: Request, res: Response) {
 }
 
 export async function listBookings(req: Request, res: Response) {
-  const status = req.query.status as bookings.BookingStatus | undefined;
-  res.json(await bookings.findBookings(status));
+  res.json(
+    await bookings.findBookings({
+      status: req.query.status as bookings.BookingStatus | undefined,
+      trainerId: req.query.trainerId ? Number(req.query.trainerId) : undefined,
+    }),
+  );
 }
 
-export async function changeBookingStatus(req: Request, res: Response) {
+/** Admin : change le statut et/ou le coach attribué. */
+export async function updateBooking(req: Request, res: Response) {
   const id = Number(req.params.id);
-  const status = req.body.status as bookings.BookingStatus;
-  if (!(await bookings.updateBookingStatus(id, status))) {
+  const before = await bookings.findBookingById(id);
+  if (!before) throw new HttpError(404, 'NOT_FOUND', 'Réservation introuvable.');
+
+  if (req.body.trainerId !== undefined) {
+    const trainerId = req.body.trainerId as number | null;
+    if (trainerId !== null && !(await trainerExists(trainerId))) {
+      throw new HttpError(400, 'VALIDATION_ERROR', 'Coach inconnu.', [
+        { field: 'trainerId', message: 'Coach inconnu' },
+      ]);
+    }
+    await bookings.assignTrainer(id, trainerId);
+  }
+  await applyStatus(id, before, req.body.status);
+  res.json(await bookings.findBookingById(id));
+}
+
+/** Coach : ses essais attribués. */
+export async function listCoachBookings(req: Request, res: Response) {
+  const trainerId = req.user!.trainerId;
+  if (trainerId === null) {
+    res.json([]);
+    return;
+  }
+  res.json(
+    await bookings.findBookings({
+      trainerId,
+      status: req.query.status as bookings.BookingStatus | undefined,
+    }),
+  );
+}
+
+/** Coach : confirme ou annule un essai qui lui est attribué. */
+export async function updateCoachBooking(req: Request, res: Response) {
+  const id = Number(req.params.id);
+  const booking = await bookings.findBookingById(id);
+  if (!booking || req.user!.trainerId === null || booking.trainerId !== req.user!.trainerId) {
     throw new HttpError(404, 'NOT_FOUND', 'Réservation introuvable.');
   }
-  const booking = await bookings.findBookingById(id);
-  if (booking) void sendMail(bookingMail(booking));
-  res.json(booking);
+  await applyStatus(id, booking, req.body.status);
+  res.json(await bookings.findBookingById(id));
+}
+
+async function applyStatus(id: number, before: bookings.Booking, status?: bookings.BookingStatus) {
+  if (!status || status === before.status) return;
+  await bookings.updateBookingStatus(id, status);
+  void sendMail(bookingMail({ ...before, status }));
 }

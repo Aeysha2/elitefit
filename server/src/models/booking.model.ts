@@ -12,20 +12,26 @@ export interface NewBooking {
   time: string;
   goal: Goal;
   planId: number | null;
+  userId?: number | null;
 }
 
 export interface Booking extends NewBooking {
   id: number;
   status: BookingStatus;
   planName: string | null;
+  trainerId: number | null;
+  trainerName: string | null;
   createdAt: string;
 }
 
 const SELECT_BOOKING = `
   SELECT b.id, b.full_name AS fullName, b.email, b.phone, b.booking_date AS date,
          TIME_FORMAT(b.booking_time, '%H:%i') AS time, b.goal, b.plan_id AS planId,
-         p.name AS planName, b.status, b.created_at AS createdAt
-    FROM bookings b LEFT JOIN plans p ON p.id = b.plan_id`;
+         p.name AS planName, b.trainer_id AS trainerId, t.name AS trainerName,
+         b.status, b.created_at AS createdAt
+    FROM bookings b
+    LEFT JOIN plans p ON p.id = b.plan_id
+    LEFT JOIN trainers t ON t.id = b.trainer_id`;
 
 /** Créneaux d'un jour de semaine, avec le nombre de réservations actives à cette date. */
 export async function findSlotsWithUsage(date: string, weekday: number) {
@@ -57,20 +63,50 @@ export async function hasActiveBooking(email: string): Promise<boolean> {
 
 export async function insertBooking(b: NewBooking): Promise<number> {
   const [result] = await pool.execute<ResultSetHeader>(
-    `INSERT INTO bookings (full_name, email, phone, booking_date, booking_time, goal, plan_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [b.fullName, b.email, b.phone, b.date, b.time, b.goal, b.planId],
+    `INSERT INTO bookings (full_name, email, phone, booking_date, booking_time, goal, plan_id, user_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [b.fullName, b.email, b.phone, b.date, b.time, b.goal, b.planId, b.userId ?? null],
   );
   return result.insertId;
 }
 
-export async function findBookings(status?: BookingStatus): Promise<Booking[]> {
+export async function findBookings(
+  filters: { status?: BookingStatus; trainerId?: number } = {},
+): Promise<Booking[]> {
+  const where: string[] = [];
+  const params: (string | number)[] = [];
+  if (filters.status) {
+    where.push('b.status = ?');
+    params.push(filters.status);
+  }
+  if (filters.trainerId !== undefined) {
+    where.push('b.trainer_id = ?');
+    params.push(filters.trainerId);
+  }
   const [rows] = await pool.execute<RowDataPacket[]>(
-    `${SELECT_BOOKING} ${status ? 'WHERE b.status = ?' : ''}
+    `${SELECT_BOOKING} ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
       ORDER BY b.booking_date DESC, b.booking_time DESC`,
-    status ? [status] : [],
+    params,
   );
   return rows as Booking[];
+}
+
+/** Réservations d'un membre : liées à son compte ou faites avec son e-mail. */
+export async function findBookingsForUser(userId: number, email: string): Promise<Booking[]> {
+  const [rows] = await pool.execute<RowDataPacket[]>(
+    `${SELECT_BOOKING} WHERE b.user_id = ? OR b.email = ?
+      ORDER BY b.booking_date DESC, b.booking_time DESC`,
+    [userId, email],
+  );
+  return rows as Booking[];
+}
+
+export async function assignTrainer(id: number, trainerId: number | null): Promise<boolean> {
+  const [result] = await pool.execute<ResultSetHeader>(
+    'UPDATE bookings SET trainer_id = ? WHERE id = ?',
+    [trainerId, id],
+  );
+  return result.affectedRows > 0;
 }
 
 export async function findBookingById(id: number): Promise<Booking | undefined> {

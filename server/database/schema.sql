@@ -1,6 +1,6 @@
 -- Schéma de la base EliteFit (MySQL 8)
 
-DROP TABLE IF EXISTS bookings, messages, admins, time_slots, gallery_images, testimonials, programs, trainers, plans;
+DROP TABLE IF EXISTS subscriptions, bookings, messages, users, admins, time_slots, gallery_images, testimonials, programs, trainers, plans, schema_migrations;
 
 CREATE TABLE plans (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -58,6 +58,20 @@ CREATE TABLE time_slots (
   UNIQUE (weekday, start_time)
 );
 
+-- Comptes : admin (gère tout), coach (ses essais), member (espace personnel)
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  full_name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  phone VARCHAR(20),
+  password_hash CHAR(60) NOT NULL,
+  role ENUM('admin','coach','member') NOT NULL DEFAULT 'member',
+  trainer_id INT NULL,                 -- fiche coach liée (rôle coach)
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE SET NULL
+);
+
 CREATE TABLE bookings (
   id INT AUTO_INCREMENT PRIMARY KEY,
   full_name VARCHAR(100) NOT NULL,
@@ -67,11 +81,30 @@ CREATE TABLE bookings (
   booking_time TIME NOT NULL,
   goal ENUM('weight_loss','muscle_gain','fitness','flexibility','other') NOT NULL,
   plan_id INT NULL,
+  user_id INT NULL,                    -- compte du visiteur s'il était connecté
+  trainer_id INT NULL,                 -- coach attribué par l'admin
   status ENUM('pending','confirmed','cancelled') NOT NULL DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (plan_id) REFERENCES plans(id) ON DELETE SET NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (trainer_id) REFERENCES trainers(id) ON DELETE SET NULL,
   INDEX idx_slot (booking_date, booking_time),
   INDEX idx_email (email)
+);
+
+-- Abonnements enregistrés par l'admin (paiement à l'accueil)
+CREATE TABLE subscriptions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  plan_id INT NULL,
+  plan_name VARCHAR(50) NOT NULL,
+  amount_fcfa INT UNSIGNED NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (plan_id) REFERENCES plans(id) ON DELETE SET NULL,
+  INDEX idx_user_dates (user_id, end_date)
 );
 
 CREATE TABLE messages (
@@ -84,9 +117,9 @@ CREATE TABLE messages (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE admins (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  email VARCHAR(150) NOT NULL UNIQUE,
-  password_hash CHAR(60) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Migrations déjà incluses dans ce schéma (voir database/migrations)
+CREATE TABLE schema_migrations (
+  name VARCHAR(100) PRIMARY KEY,
+  applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+INSERT INTO schema_migrations (name) VALUES ('001_users_roles.sql');
